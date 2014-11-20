@@ -35,6 +35,7 @@
 
 @property(readwrite) id <TRSuggestionItem> selectedSuggestion;
 @property(readwrite) NSArray *suggestions;
+@property NSUInteger originalTableHeight;
 
 @end
 
@@ -144,6 +145,7 @@
                             calculatedY,
                             _queryTextField.frame.size.width,
                             calculatedHeight);
+
     _table.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
 }
 
@@ -229,6 +231,13 @@
 - (void)refreshTable {
     if (_queryTextField.isFirstResponder) {
         [_table reloadData];
+        CGRect frame = _table.frame;
+        if(_table.contentSize.height<self.frame.size.height) {
+            frame.size.height = _table.contentSize.height;
+        } else {
+            frame.size.height = self.frame.size.height;
+        }
+        _table.frame = frame;
     }
 }
 
