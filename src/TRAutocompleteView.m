@@ -74,6 +74,7 @@
     {
         [self loadDefaults];
         self.originalHeight = frame.size.height;
+        NSLog(@"Setting dat original height2 %f",self.frame.size.height);
         
         _queryTextField = textField;
         _itemsSource = itemsSource;
@@ -117,6 +118,28 @@
     self.topMargin = 0;
 }
 
+- (void)adjustHeight
+{
+    if(!self.originalHeight) {
+        self.originalHeight = self.frame.size.height;
+        NSLog(@"Setting dat original height %f",self.frame.size.height);
+    }
+    
+    {
+        CGRect frame = _table.frame;
+        CGRect myFrame = self.frame;
+        if(_table.contentSize.height<=self.frame.size.height) {
+            frame.size.height = _table.contentSize.height;
+            myFrame.size.height = _table.contentSize.height;
+        } else {
+            frame.size.height = self.originalHeight;
+            myFrame.size.height = self.originalHeight;
+        }
+        _table.frame = frame;
+        self.frame = myFrame;
+    }
+}
+
 - (void)keyboardWasShown:(NSNotification *)notification
 {
     NSDictionary *info = [notification userInfo];
@@ -140,7 +163,10 @@
     CGFloat calculatedY = textPosition.y + _queryTextField.frame.size.height + self.topMargin;
     CGFloat calculatedHeight = contextViewHeight - calculatedY - kbHeight;
     
-    calculatedHeight += _contextController.tabBarController.tabBar.frame.size.height; //keyboard is shown over it, need to compensate
+    NSLog(@"calculatedY=%f textPosY=%f qtfFr=%f stm=%f cvh=%f kbh=%f tabHeight=%f",calculatedY,textPosition.y,_queryTextField.frame.size.height,self.topMargin,contextViewHeight,kbHeight,_contextController.tabBarController.tabBar.frame.size.height);
+    
+    // Commenting this out because it makes the drop down too long and goes behind keyb
+    // calculatedHeight += _contextController.tabBarController.tabBar.frame.size.height; //keyboard is shown over it, need to compensate
     
     
     self.frame = CGRectMake(_queryTextField.frame.origin.x,
@@ -150,23 +176,7 @@
     
     _table.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
     
-    if(!self.originalHeight) {
-        self.originalHeight = self.frame.size.height;
-    }
-    
-    {
-        CGRect frame = _table.frame;
-        CGRect myFrame = self.frame;
-        if(_table.contentSize.height<=self.frame.size.height) {
-            frame.size.height = _table.contentSize.height;
-            myFrame.size.height = _table.contentSize.height;
-        } else {
-            frame.size.height = self.originalHeight;
-            myFrame.size.height = self.originalHeight;
-        }
-        _table.frame = frame;
-        self.frame = myFrame;
-    }
+    [self adjustHeight];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
@@ -251,20 +261,7 @@
 - (void)refreshTable {
     if (_queryTextField.isFirstResponder) {
         [_table reloadData];
-        if(!self.originalHeight) {
-            self.originalHeight = self.frame.size.height;
-        }
-        CGRect frame = _table.frame;
-        CGRect myFrame = self.frame;
-        if(_table.contentSize.height<=self.frame.size.height) {
-            frame.size.height = _table.contentSize.height;
-            myFrame.size.height = _table.contentSize.height;
-        } else {
-            frame.size.height = self.originalHeight;
-            myFrame.size.height = self.originalHeight;
-        }
-        _table.frame = frame;
-        self.frame = myFrame;
+        [self adjustHeight];
     }
     
 }
